@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>PTK ERT PKB</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  body { font-family:-apple-system,"Segoe UI",system-ui,sans-serif; background:#f0f2f5; color:#1f2328; font-size:15px; line-height:1.6; max-width:480px; margin:0 auto; }
+
+  /* HEADER */
+  .header { background:#1a3a5c; color:#fff; padding:16px; display:flex; align-items:center; gap:12px; position:sticky; top:0; z-index:200; }
+  .header-logo { width:42px; height:42px; background:#fff; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0; }
+  .header-text h1 { font-size:14px; font-weight:700; line-height:1.3; }
+  .header-text p { font-size:11px; opacity:0.75; margin-top:2px; }
+
+  /* SOS BAR */
+  .sos-bar { background:#e74c3c; color:#fff; padding:10px 16px; display:flex; align-items:center; gap:10px; font-size:13px; font-weight:700; }
+  .sos-bar a { color:#fff; text-decoration:none; background:rgba(255,255,255,0.2); padding:4px 10px; border-radius:20px; font-size:12px; }
+
+  /* BOTTOM NAV */
+  .bottom-nav { position:fixed; bottom:0; left:50%; transform:translateX(-50%); width:100%; max-width:480px; background:#fff; border-top:1px solid #e5e7eb; display:flex; z-index:200; box-shadow:0 -2px 10px rgba(0,0,0,0.08); }
+  .bnav-item { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:8px 4px; cursor:pointer; transition:background 0.15s; border:none; background:none; }
+  .bnav-item:active { background:#f0f2f5; }
+  .bnav-item.active .bnav-icon { color:#1a3a5c; }
+  .bnav-item.active .bnav-label { color:#1a3a5c; font-weight:700; }
+  .bnav-icon { font-size:20px; color:#94a3b8; }
+  .bnav-label { font-size:10px; color:#94a3b8; margin-top:2px; }
+
+  /* MAIN */
+  .main { padding:14px 14px 80px; }
+  .section { display:none; }
+  .section.active { display:block; }
+
+  /* ALERT */
+  .alert { border-radius:10px; padding:12px 14px; margin-bottom:14px; border-left:4px solid; font-size:13px; }
+  .alert-red { background:#fef2f2; border-color:#e74c3c; color:#7f1d1d; }
+  .alert-blue { background:#eff6ff; border-color:#3b82f6; color:#1e3a8a; }
+  .alert-yellow { background:#fffbeb; border-color:#f59e0b; color:#78350f; }
+
+  /* SECTION TITLE */
+  .sec-title { font-size:15px; font-weight:700; color:#1a3a5c; margin-bottom:12px; display:flex; align-items:center; gap:6px; }
+
+  /* STAT CARDS */
+  .stats { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px; }
+  .stat-card { background:#fff; border-radius:12px; padding:16px; border:1px solid #e5e7eb; text-align:center; }
+  .stat-icon { font-size:26px; }
+  .stat-val { font-size:26px; font-weight:800; color:#1a3a5c; margin:4px 0; }
+  .stat-label { font-size:11px; color:#57606a; font-weight:600; }
+
+  /* TAHAP CARDS */
+  .tahap-cards { display:flex; flex-direction:column; gap:10px; margin-bottom:16px; }
+  .tahap-card { border-radius:12px; padding:16px; color:#fff; }
+  .tahap-1 { background:linear-gradient(135deg,#27ae60,#2ecc71); }
+  .tahap-2 { background:linear-gradient(135deg,#f39c12,#f1c40f); }
+  .tahap-3 { background:linear-gradient(135deg,#e74c3c,#c0392b); }
+  .tahap-card h3 { font-size:15px; font-weight:700; margin-bottom:4px; }
+  .tahap-card .sub { font-size:12px; opacity:0.85; margin-bottom:8px; }
+  .tahap-card ul { padding-left:16px; font-size:13px; }
+  .tahap-card ul li { margin-bottom:3px; }
+
+  /* KAWASAN */
+  .kw-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:16px; }
+  .kw-card { background:#fff; border-radius:10px; padding:12px; border:1px solid #e5e7eb; text-align:center; font-size:12px; }
+  .kw-card .icon { font-size:22px; margin-bottom:4px; }
+  .kw-card .label { color:#57606a; font-weight:600; }
+
+  /* KECEMASAN LIST */
+  .emg-list { display:flex; flex-direction:column; gap:10px; margin-bottom:16px; }
+  .emg-card { background:#fff; border-radius:12px; border:1px solid #e5e7eb; overflow:hidden; }
+  .emg-header { padding:13px 14px; display:flex; align-items:center; gap:8px; font-weight:700; font-size:14px; cursor:pointer; user-select:none; }
+  .emg-header .arrow { margin-left:auto; font-size:12px; transition:transform 0.2s; }
+  .emg-header.open .arrow { transform:rotate(180deg); }
+  .emg-body { padding:0 14px; max-height:0; overflow:hidden; transition:max-height 0.3s ease, padding 0.3s; }
+  .emg-body.open { max-height:600px; padding:0 14px 14px; }
+  .emg-body p { font-size:13px; color:#444; margin-bottom:6px; }
+  .emg-body ul { padding-left:16px; font-size:13px; color:#444; }
+  .emg-body ul li { margin-bottom:3px; }
+  .emg-pill { font-size:10px; font-weight:700; padding:2px 8px; border-radius:10px; margin-left:auto; margin-right:6px; }
+
+  .fire .emg-header { background:#fef2f2; color:#c0392b; }
+  .flood .emg-header { background:#eff6ff; color:#1d4ed8; }
+  .elec .emg-header { background:#fffbeb; color:#d97706; }
+  .chem .emg-header { background:#f0fdf4; color:#15803d; }
+  .med .emg-header { background:#fdf4ff; color:#7e22ce; }
+  .quake .emg-header { background:#fff7ed; color:#c2410c; }
+  .threat .emg-header { background:#f8fafc; color:#374151; }
+
+  /* PROSEDUR */
+  .proc-scroll { display:flex; gap:8px; overflow-x:auto; padding-bottom:8px; margin-bottom:14px; -webkit-overflow-scrolling:touch; scrollbar-width:none; }
+  .proc-scroll::-webkit-scrollbar { display:none; }
+  .proc-chip { padding:8px 14px; border-radius:20px; border:2px solid #e5e7eb; background:#fff; cursor:pointer; font-size:12px; font-weight:600; color:#57606a; white-space:nowrap; flex-shrink:0; }
+  .proc-chip.active { background:#1a3a5c; color:#fff; border-color:#1a3a5c; }
+  .proc-content { display:none; }
+  .proc-content.active { display:block; }
+
+  .flow-steps { display:flex; flex-direction:column; gap:0; }
+  .flow-step { display:flex; gap:12px; }
+  .flow-left { display:flex; flex-direction:column; align-items:center; }
+  .flow-dot { width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; color:#fff; flex-shrink:0; }
+  .dot-start { background:#3b82f6; }
+  .dot-step { background:#1a3a5c; }
+  .dot-end { background:#22c55e; }
+  .flow-line { width:2px; background:#e5e7eb; flex:1; margin:4px auto; }
+  .flow-right { background:#fff; border-radius:10px; border:1px solid #e5e7eb; padding:10px 12px; margin-bottom:8px; flex:1; }
+  .flow-right .action { font-size:13px; color:#1f2328; }
+  .flow-right .pic { font-size:11px; color:#3b82f6; font-weight:600; margin-top:4px; }
+  .flow-step-start .flow-right { background:#eff6ff; border-color:#93c5fd; }
+  .flow-step-end .flow-right { background:#f0fdf4; border-color:#86efac; }
+
+  /* ORGANISASI */
+  .org-wrap { background:#fff; border-radius:12px; border:1px solid #e5e7eb; padding:16px; margin-bottom:16px; }
+  .org-node-wrap { display:flex; justify-content:center; margin-bottom:8px; }
+  .org-node { border-radius:10px; padding:10px 14px; text-align:center; font-size:12px; font-weight:600; border:2px solid; }
+  .n-ic { background:#1a3a5c; color:#fff; border-color:#1a3a5c; font-size:13px; min-width:200px; }
+  .n-staff { background:#dbeafe; color:#1e40af; border-color:#93c5fd; min-width:120px; }
+  .n-section { background:#f0fdf4; color:#15803d; border-color:#86efac; min-width:100px; font-size:11px; }
+  .org-row { display:flex; justify-content:center; gap:6px; flex-wrap:wrap; margin-bottom:8px; }
+  .org-line { text-align:center; color:#94a3b8; font-size:16px; margin-bottom:4px; }
+
+  .role-list { display:flex; flex-direction:column; gap:8px; margin-bottom:16px; }
+  .role-card { background:#fff; border-radius:10px; border:1px solid #e5e7eb; padding:12px 14px; }
+  .role-card .title { font-size:13px; font-weight:700; color:#1a3a5c; margin-bottom:4px; }
+  .role-card .dept { font-size:11px; color:#57606a; background:#f0f2f5; padding:2px 8px; border-radius:8px; display:inline-block; margin-bottom:6px; }
+  .role-card .desc { font-size:12px; color:#444; }
+
+  /* BORANG */
+  .borang-list { display:flex; flex-direction:column; gap:10px; margin-bottom:16px; }
+  .borang-card { background:#fff; border-radius:12px; border:1px solid #e5e7eb; padding:14px; }
+  .bcode { display:inline-block; background:#1a3a5c; color:#fff; font-size:11px; font-weight:700; padding:3px 10px; border-radius:6px; margin-bottom:8px; }
+  .borang-card h4 { font-size:13px; font-weight:700; color:#1f2328; margin-bottom:6px; }
+  .borang-card p { font-size:12px; color:#57606a; margin-bottom:6px; }
+  .bpic { font-size:12px; color:#15803d; font-weight:600; }
+  .btime { font-size:11px; color:#e74c3c; margin-top:4px; font-weight:600; }
+
+  .contoh-box { background:#f7f8fa; border:1px solid #e5e7eb; border-radius:12px; padding:14px; margin-bottom:16px; }
+  .contoh-box h4 { font-size:13px; font-weight:700; color:#1a3a5c; margin-bottom:10px; }
+  .crow { display:flex; flex-direction:column; margin-bottom:8px; font-size:13px; border-bottom:1px solid #e5e7eb; padding-bottom:8px; }
+  .ckey { font-weight:700; color:#374151; font-size:12px; margin-bottom:2px; }
+  .cval { color:#444; }
+
+  /* HUBUNGI */
+  .call-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px; }
+  .call-card { background:#fff; border-radius:12px; border:2px solid #e5e7eb; padding:16px; text-align:center; text-decoration:none; display:block; transition:transform 0.1s; }
+  .call-card:active { transform:scale(0.97); }
+  .call-card.merah { border-color:#e74c3c; }
+  .call-card.hijau { border-color:#22c55e; }
+  .call-card.biru { border-color:#3b82f6; }
+  .call-card.kuning { border-color:#f59e0b; }
+  .call-icon { font-size:24px; margin-bottom:6px; }
+  .call-num { font-size:22px; font-weight:800; margin:4px 0; }
+  .call-card.merah .call-num { color:#e74c3c; }
+  .call-card.hijau .call-num { color:#22c55e; }
+  .call-card.biru .call-num { color:#3b82f6; }
+  .call-card.kuning .call-num { color:#f59e0b; }
+  .call-label { font-size:12px; font-weight:700; color:#1f2328; }
+  .call-sub { font-size:10px; color:#57606a; margin-top:3px; }
+
+  .masa-list { display:flex; flex-direction:column; gap:8px; }
+  .masa-card { background:#fff; border-radius:10px; border:1px solid #e5e7eb; padding:12px 14px; display:flex; justify-content:space-between; align-items:center; gap:10px; }
+  .masa-action { font-size:13px; color:#1f2328; flex:1; }
+  .masa-time { font-size:13px; font-weight:700; white-space:nowrap; }
+  .t-green { color:#27ae60; }
+  .t-orange { color:#f39c12; }
+
+  /* FOOTER */
+  .footer { text-align:center; padding:16px; font-size:11px; color:#57606a; background:#fff; border-top:1px solid #e5e7eb; margin-bottom:70px; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-logo">🏛️</div>
+  <div class="header-text">
+    <h1>PTK ERT — Politeknik Kota Bharu</h1>
+    <p>Emergency Response Team &middot; Versi 1.0 &middot; 2025</p>
+  </div>
+</div>
+
+<!-- SOS BAR -->
+<div class="sos-bar">
+  🚨 Kecemasan?
+  <a href="tel:994">Bomba 994</a>
+  <a href="tel:999">Polis/Ambulans 999</a>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="main">
+
+  <!-- RINGKASAN -->
+  <div class="section active" id="sec-overview">
+    <div class="sec-title">📊 Ringkasan PTK ERT PKB</div>
+    <div class="stats">
+      <div class="stat-card"><div class="stat-icon">⚠️</div><div class="stat-val">7</div><div class="stat-label">Jenis Kecemasan</div></div>
+      <div class="stat-card"><div class="stat-icon">📊</div><div class="stat-val">3</div><div class="stat-label">Tahap Kecemasan</div></div>
+      <div class="stat-card"><div class="stat-icon">👥</div><div class="stat-val">8+</div><div class="stat-label">Anggota ERT</div></div>
+      <div class="stat-card"><div class="stat-icon">📄</div><div class="stat-val">6</div><div class="stat-label">Borang Rasmi</div></div>
+    </div>
+
+    <div class="sec-title">🎯 Tahap Kecemasan</div>
+    <div class="tahap-cards">
+      <div class="tahap-card tahap-1">
+        <h3>TAHAP 1 &mdash; RENDAH</h3>
+        <div class="sub">Insiden kecil &middot; ERT dalaman PKB</div>
+        <ul><li>Kebakaran kecil (APAR)</li><li>Kecederaan ringan</li><li>Tumpahan kimia kecil</li><li>IC + Pengurusan PKB dimaklumkan</li></ul>
+      </div>
+      <div class="tahap-card tahap-2">
+        <h3>TAHAP 2 &mdash; SEDERHANA</h3>
+        <div class="sub">Insiden sederhana &middot; Sokongan tambahan</div>
+        <ul><li>Kebakaran / banjir sederhana</li><li>Kecederaan serius &mdash; hospital</li><li>Pengarah PKB dimaklumkan</li></ul>
+      </div>
+      <div class="tahap-card tahap-3">
+        <h3>TAHAP 3 &mdash; KRITIKAL</h3>
+        <div class="sub">Insiden besar &middot; Agensi luar diperlukan</div>
+        <ul><li>Kebakaran besar / banjir massal</li><li>Bencana / letupan / ancaman senjata</li><li>EOC diaktifkan &middot; Hubungi 994 / 999</li></ul>
+      </div>
+    </div>
+
+    <div class="sec-title">🗺️ Kawasan Liputan</div>
+    <div class="kw-grid">
+      <div class="kw-card"><div class="icon">🏫</div><div class="label">Dewan Kuliah &amp; Makmal</div></div>
+      <div class="kw-card"><div class="icon">🔧</div><div class="label">Bengkel Kejuruteraan</div></div>
+      <div class="kw-card"><div class="icon">🏢</div><div class="label">Bangunan Pentadbiran</div></div>
+      <div class="kw-card"><div class="icon">🏠</div><div class="label">Asrama Pelajar</div></div>
+      <div class="kw-card"><div class="icon">🍽️</div><div class="label">Kafeteria &amp; Dewan Makan</div></div>
+      <div class="kw-card"><div class="icon">⚽</div><div class="label">Kawasan Sukan</div></div>
+    </div>
+  </div>
+
+  <!-- KECEMASAN -->
+  <div class="section" id="sec-kecemasan">
+    <div class="sec-title">⚠️ 7 Jenis Kecemasan</div>
+    <div class="alert alert-blue">Ketik pada setiap jenis kecemasan untuk melihat maklumat lanjut.</div>
+    <div class="emg-list">
+      <div class="emg-card fire">
+        <div class="emg-header" onclick="toggleEmg(this)"><span>🔥</span> 2.1 Kebakaran <span class="emg-pill" style="background:#fee2e2;color:#b91c1c">TINGGI</span><span class="arrow">▼</span></div>
+        <div class="emg-body">
+          <p><strong>Punca Lazim:</strong></p><ul><li>Litar pintas peralatan makmal / bengkel</li><li>Kecuaian bahan mudah terbakar</li><li>Kegagalan peralatan memasak</li></ul>
+          <p style="margin-top:8px"><strong>Tanda Awal:</strong> Bau asap &middot; Penggera berbunyi &middot; Nampak api / asap</p>
+          <p style="margin-top:8px"><strong>Pengungsian:</strong> Keluar melalui laluan kecemasan &middot; JANGAN guna lif &middot; Titik Perhimpunan</p>
+          <p style="margin-top:8px"><strong>PIC:</strong> IC &middot; Ops Chief &middot; Safety Officer &middot; Liaison Officer</p>
+        </div>
+      </div>
+      <div class="emg-card flood">
+        <div class="emg-header" onclick="toggleEmg(this)"><span>🌊</span> 2.2 Banjir <span class="emg-pill" style="background:#dbeafe;color:#1d4ed8">MUSIMAN</span><span class="arrow">▼</span></div>
+        <div class="emg-body">
+          <p><strong>Punca Lazim:</strong></p><ul><li>Hujan lebat musim tengkujuh (Nov&ndash;Jan)</li><li>Saliran kampus tersumbat</li><li>Limpahan sungai berhampiran</li></ul>
+          <p style="margin-top:8px"><strong>Tanda Awal:</strong> Amaran JMM &middot; Hujan &gt;2 jam &middot; Paras air meningkat</p>
+          <p style="margin-top:8px"><strong>Pengungsian:</strong> Pindah ke tingkat atas &middot; Matikan elektrik utama &middot; Pusat Pemindahan</p>
+          <p style="margin-top:8px"><strong>PIC:</strong> IC &middot; Ops Chief &middot; Logistics Chief &middot; Liaison Officer</p>
+        </div>
+      </div>
+      <div class="emg-card elec">
+        <div class="emg-header" onclick="toggleEmg(this)"><span>⚡</span> 2.3 Kecemasan Elektrik <span class="emg-pill" style="background:#fef9c3;color:#854d0e">BAHAYA</span><span class="arrow">▼</span></div>
+        <div class="emg-body">
+          <p><strong>Punca Lazim:</strong></p><ul><li>Litar pintas panel elektrik utama</li><li>Peralatan elektrik rosak</li><li>Kegagalan bekalan TNB</li></ul>
+          <p style="margin-top:8px"><strong>Tanda Awal:</strong> Percikan api &middot; Bau hangit &middot; Gangguan elektrik tiba-tiba</p>
+          <p style="margin-top:8px"><strong>Pengungsian:</strong> JANGAN sentuh mangsa &middot; Matikan Main Switch &middot; Jauhi 10 meter</p>
+          <p style="margin-top:8px"><strong>PIC:</strong> IC &middot; Ops Chief &middot; Medical Unit &middot; Liaison Officer</p>
+        </div>
+      </div>
+      <div class="emg-card chem">
+        <div class="emg-header" onclick="toggleEmg(this)"><span>🧪</span> 2.4 Tumpahan Kimia <span class="emg-pill" style="background:#dcfce7;color:#15803d">MAKMAL</span><span class="arrow">▼</span></div>
+        <div class="emg-body">
+          <p><strong>Punca Lazim:</strong></p><ul><li>Kecuaian kendalian bahan kimia</li><li>Bekas bocor / rosak</li><li>Tindak balas kimia tidak dijangka</li></ul>
+          <p style="margin-top:8px"><strong>Tanda Awal:</strong> Bau kimia kuat &middot; Cecair/gas tertumpah &middot; Pedih mata / sesak nafas</p>
+          <p style="margin-top:8px"><strong>Pengungsian:</strong> Bergerak upwind &middot; Basuh badan 15 minit &middot; APD diperlukan</p>
+          <p style="margin-top:8px"><strong>PIC:</strong> IC &middot; Ops Chief (APD) &middot; Medical Unit &middot; Liaison Officer</p>
+        </div>
+      </div>
+      <div class="emg-card med">
+        <div class="emg-header" onclick="toggleEmg(this)"><span>🏥</span> 2.5 Kecemasan Perubatan <span class="emg-pill" style="background:#f3e8ff;color:#7e22ce">SEGERA</span><span class="arrow">▼</span></div>
+        <div class="emg-body">
+          <p><strong>Punca Lazim:</strong></p><ul><li>Serangan jantung / strok</li><li>Kemalangan semasa sukan / bengkel</li><li>Reaksi alahan teruk (anaphylaxis)</li></ul>
+          <p style="margin-top:8px"><strong>Tanda Awal:</strong> Pengsan / tidak sedar &middot; Pernafasan tidak normal &middot; Sakit dada</p>
+          <p style="margin-top:8px"><strong>Tindakan:</strong> CPR jika perlu &middot; Jangan alih mangsa &middot; Hubungi 999 segera</p>
+          <p style="margin-top:8px"><strong>PIC:</strong> IC &middot; Medical Unit &middot; Liaison Officer</p>
+        </div>
+      </div>
+      <div class="emg-card quake">
+        <div class="emg-header" onclick="toggleEmg(this)"><span>💥</span> 2.6 Gempa / Letupan <span class="emg-pill" style="background:#ffedd5;color:#c2410c">KRITIKAL</span><span class="arrow">▼</span></div>
+        <div class="emg-body">
+          <p><strong>Punca Lazim:</strong></p><ul><li>Getaran dari negara jiran</li><li>Kebocoran gas &mdash; letupan</li><li>Tindak balas kimia tidak terkawal</li></ul>
+          <p style="margin-top:8px"><strong>Tanda Awal:</strong> Gegaran bangunan &middot; Bunyi letupan &middot; Keretakan mendadak</p>
+          <p style="margin-top:8px"><strong>Pengungsian:</strong> Drop-Cover-Hold semasa gegaran &middot; Evakuasi selepas berhenti</p>
+          <p style="margin-top:8px"><strong>PIC:</strong> IC &middot; Ops Chief (SAR) &middot; Medical Unit &middot; Liaison Officer</p>
+        </div>
+      </div>
+      <div class="emg-card threat">
+        <div class="emg-header" onclick="toggleEmg(this)"><span>🔒</span> 2.7 Ancaman Keselamatan <span class="emg-pill" style="background:#f1f5f9;color:#374151">PDRM</span><span class="arrow">▼</span></div>
+        <div class="emg-body">
+          <p><strong>Punca Lazim:</strong></p><ul><li>Ancaman bom / mesej mencurigakan</li><li>Pergaduhan / kekecohan pelajar</li><li>Penceroboh / individu mencurigakan</li></ul>
+          <p style="margin-top:8px"><strong>Tanda Awal:</strong> Laporan mencurigakan &middot; Ancaman agresif &middot; Objek asing</p>
+          <p style="margin-top:8px"><strong>Pengungsian:</strong> Jangan panik &middot; Jangan sentuh objek &middot; Tunggu PDRM</p>
+          <p style="margin-top:8px"><strong>PIC:</strong> IC &middot; Safety Officer &middot; Liaison Officer (PDRM)</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROSEDUR -->
+  <div class="section" id="sec-prosedur">
+    <div class="sec-title">📋 Prosedur Tindak Balas</div>
+    <div class="proc-scroll">
+      <div class="proc-chip active" onclick="showProc('fire',this)">🔥 Kebakaran</div>
+      <div class="proc-chip" onclick="showProc('flood',this)">🌊 Banjir</div>
+      <div class="proc-chip" onclick="showProc('elec',this)">⚡ Elektrik</div>
+      <div class="proc-chip" onclick="showProc('chem',this)">🧪 Kimia</div>
+      <div class="proc-chip" onclick="showProc('med',this)">🏥 Perubatan</div>
+      <div class="proc-chip" onclick="showProc('quake',this)">💥 Gempa</div>
+      <div class="proc-chip" onclick="showProc('threat',this)">🔒 Ancaman</div>
+    </div>
+
+    <div class="proc-content active" id="proc-fire">
+      <div class="flow-steps">
+        <div class="flow-step flow-step-start"><div class="flow-left"><div class="flow-dot dot-start">M</div><div class="flow-line"></div></div><div class="flow-right"><div class="action">Kebakaran dikesan &mdash; api / asap / penggera berbunyi</div><div class="pic">Sesiapa yang mengesan</div></div></div>
+        <div class="flow-step"><div class="flow-left"><div class="flow-dot dot-step">1</div><div class="flow-line"></div></div><div class="flow-right"><div class="action">Bunyikan penggera kebakaran &amp; laporkan kepada ERT / Keselamatan PKB</div><div class="pic">Pengesan Pertama</div></div></div>
+        <div class="flow-step"><div class="flow-left"><div class="flow-dot dot-step">2</div><div class="flow-line"></div></div><div class="flow-right"><div class="action">Nilai situasi: Api kecil? [YA] Guna APAR &mdash; [TIDAK] teruskan</div><div class="pic">Operations Section Chief</div></div></div>
+        <div class="flow-step"><div class="flow-left"><div class="flow-dot dot-step">3</div><div class="flow-line"></div></div><div class="flow-right"><div class="action">Aktifkan ERT PKB &mdash; hubungi Incident Commander segera</div><div class="pic">Safety Officer</div></div></div>
+        <div class="flow-step"><div class="flow-left"><div class="flow-dot dot-step">4</div><div class="flow-line"></div></div><div class="flow-right"><div class="action">Laksanakan pengungsian bangunan &mdash; JANGAN guna lif &mdash; ke Titik Perhimpunan</div><div class="pic">Operations Section Chief</div></div></div>
+        <div class="flow-step"><div class="flow-left"><div class="flow-dot dot-step">5</div><div class="flow-line"></div></div><div class="flow-right"><div class="action">Hubungi Bomba (994) &amp; laporkan situasi</div><div class="pic">Liaison Officer</div></div></div>
+        <div class="flow-step"><div class="flow-left"><div class="flow-dot dot-step">6</div><div class="flow-line"></div></div><div class="flow-right"><div class="action">Periksa kehadiran semua individu di Titik Perhimpunan</div><div class="pic">Safety Officer</div></div></div>
+        <div class="flow-step"><div class="flow-left"><div class="flow-dot dot-step">7</div><div class="flow-line"></div></div><div class="flow-right"><div class="action">Serahkan kawalan kepada Bomba. IC teruskan koordinasi</div><div class="pic">Incident Commander</div></div></div>
+        <div class="flow-step flow-step-end"><div class="flow-left"><div class="flow-dot dot-end">T</div></div><div class="flow-right"><div class="action">IC sahkan kawasan selamat. Isi BRT-01 dalam 24 jam</div><div class="pic">Incident Commander</div></div></div>
+      </div>
+    </div>
+
+    <div class="proc-content" id="proc-flood">
+      <div class="flow-steps">
+        <div class="flow-step flow-step-start"><div class="flow-left"><div class="flow-dot dot-start">M</div><div class="flow-line"></div></div><div class="flow-right"><div class="action">Terima amaran JMM atau kesan paras air meningkat</div><div class="pic">Safety Officer / Sesiapa yang mengesan</div></div></div>
+        <div class="flow-step"><div class="flow-left"><div class="flow-dot dot-step">1</div><div class="flow-line"></div></div><div class="flow-right"><div class="action">Laporkan kepada IC &mdash; aktifkan status berjaga-jaga</div><div class="pic">Safety Officer</div></div></div>
+        <div class="flow-step"><div class="flow-left"><div class="flow-dot dot-step">2</div><div class="flow-line"></div></div><div class="flow-right"><div class="action">Nilai tahap banjir 1/2/3. [Tahap 3] Pengungsian segera</div><div class="pic">Incident Commander</div></div></div>
+        <div class="flow-step"><div class="flow-left"><div class="flow-dot dot-step">3</div><div class="flow-line"></div></div><div class="flow-right"><div class="action">Matikan bekalan elektrik utama. Pindah peralatan ke tempat tinggi</div><div class="pic">Operations Section Chief</div></div></div>
+        <div class="flow-step"><div class="flow-left"><div class="flow-dot dot-step">4</div><div class="flow-line"></div></div><div class="flow-right"><div class="action">Pengungsian ke Pusat Pemindahan Sementara (Dewan Utama PKB)</div><div class="pic">Operations Section Chief</div></div></div>
+        <div class="flow-step"><div class="flow-left"><div class="flow-dot dot-step">5</div><div class="flow-line"></div></div><div class="flow-right"><div class="action">Hubungi NADMA, Majlis Perbandaran &amp; pihak berkuasa</div><div class="pic">Liaison Officer</div></div></div>
+        <div class="flow-step"><div class="flow-left"><div class="flow-dot dot-step">6</div><div class="flow-line"></div></div><div class="flow-right"><div class="action">Sediakan bekalan makanan, air &amp; keperluan asas</div><div class="pic">Logistics Section Chief</div></div></div>
+        <div class="flow-step flow-step-end"><div class="flow-left"><div class="flow-dot dot-end">T</div></div><div class="flow-right"><div class="action">IC terima arahan pulang dari pihak berkuasa. Isi BRT-01</div><div class="pic">Incident Commander</div></div></div>
+      </div>
+    </div>
+
+    <div class="proc-content" id="proc-elec">
+      <div class="flow-steps">
+        <div class="flow-step flow-step-start"><div class="flow-left"><div class="flow-dot dot-start">M</div><div class="flow-line"></div></div><div class="flow-right"><div class="action">Kesan percikan api, bau hangit, kejutan elektrik atau gangguan bekalan</div><div class="pic">Sesiapa yang mengesan</div></div></div>
+        <div class="flow-step"><div class="flow-left"><div class="flow-dot dot-step">1</div><div class="flow-line"></div></div><div class="flow-right"><div class="action">JANGAN sentuh mangsa atau peralatan. Laporkan kepada ERT segera</div><div class="pic">Pengesan Pertama</div></div></div>
+        <div class="flow-step"><div class="flow-left"><div class="flow-dot dot-step">2</div><div class="flow-line"></div></div><div class="flow-right"><div class="action">Aktifkan ERT &mdash; hubungi IC. Evakuasikan kawasan bahaya</div><div class="pic">Safety Officer</div></div></div>
+        <div class="flow-step"><div class="flow-left"><div class="flow-dot dot-step">3</div><div class="flow-line"></div></div><div class="flow-right"><div class="action">Matikan Suis Utama (Main Switch) bangunan dengan selamat</div><div class="pic">Operations Section Chief</div></div></div>
+        <div class="flow-step"><div class="flow-left"><div class="flow-dot dot-step">4</div><div class="flow-line"></div></div><div class="flow-right"><div class="action">Rawat mangsa kejutan elektrik selepas bekalan diputuskan &mdash; CPR jika perlu</div><div class="pic">Medical Unit</div></div></div>
+        <div class="flow-step"><div class="flow-left"><div class="flow-dot dot-step">5</div><div class="flow-line"></div></div><div class="flow-right"><div class="action">Hubungi TNB (15454) &amp; juruteknik PKB untuk pemulihan</div><div class="pic">Liaison Officer</div></div></div>
+        <div class="flow-step flow-step-end"><div class="flow-left"><div class="flow-dot dot-end">T</div></div><div class="flow-right"><div class="action">TNB / Juruteknik sahkan sistem selamat. IC benarkan masuk semula</div><div class="pic">Incident Commander</div></div></div>
+      </div>
+    </div>
+
+    <div class="proc-content" id="proc-chem">
+      <div class="flow-steps">
+        <div class="flow-step flow-step-start"><div class="flow-left"><div class="flow-dot dot-start">M</div><div class="flow-line"></div></div><div class="flow-right"><div class="action">Kesan tumpahan / bau kimia / individu pedih mata atau sesak nafas</div><div class="pic">Sesiapa yang mengesan</div></div></div>
+        <div class="flow-step"><div class="flow-left"><div class="flow-dot dot-step">1</div><div class="flow-line"></div></div><div class="flow-right"><div class="action">Evakuasikan makmal segera &mdash; tutup pintu, jangan kunci</div><div class="pic">Pengesan Pertama / Pensyarah</div></div></div>
+        <div class="flow-step"><div class="flow-left"><div class="flow-dot dot-step">2</div><div class="flow-line"></div></div><div class="flow-right"><div class="action">Laporkan kepada ERT &mdash; IC dimaklumkan</div><div class="pic">Safety Officer</div></div></div>
+        <div class="flow-step"><div class="flow-left"><div class="flow-dot dot-step">3</div><div class="flow-line"></div></div><div class="flow-right"><div class="action">Nilai jenis bahan kimia &amp; bahaya. Tentukan zon selamat</div><div class="pic">Operations Section Chief</div></div></div>
+        <div class="flow-step"><div class="flow-left"><div class="flow-dot dot-step">4</div><div class="flow-line"></div></div><div class="flow-right"><div class="action">Rawat mangsa pendedahan kimia &mdash; basuh air bersih 15 minit</div><div class="pic">Medical Unit</div></div></div>
+        <div class="flow-step"><div class="flow-left"><div class="flow-dot dot-step">5</div><div class="flow-line"></div></div><div class="flow-right"><div class="action">Pasukan APD masuk untuk pembersihan. Hubungi JBPM jika perlu</div><div class="pic">Ops Chief / Liaison Officer</div></div></div>
+        <div class="flow-step"><div class="flow-left"><div class="flow-dot dot-step">6</div><div class="flow-line"></div></div><div class="flow-right"><div class="action">Hantar mangsa serius ke Hospital Kota Bharu</div><div class="pic">Medical Unit / Liaison Officer</div></div></div>
+        <div class="flow-step flow-step-end"><div class="flow-left"><div class="flow-dot dot-end">T</div></div><div class="flow-right"><div class="action">IC sahkan kawasan bersih &amp; selamat. Isi BRT-01 dalam 24 jam</div><div class="pic">Incident Commander</div></div></div>
+      </div>
+    </div>
+
+    <div class="proc-content" id="proc-med">
+      <div class="flow-steps">
+        <div class="flow-step flow-step-start"><div class="flow-left"><div class="flow-dot dot-start">M</div><div class="flow-line"></div></div><div class="flow-right"><div class="action">Individu pengsan / tidak sedar / mengalami kecederaan serius</div><div class="pic">Sesiapa yang mengesan</div></div></div>
+        <div class="flow-step"><div class="flow-left"><div class="flow-dot dot-step">1</div><div class="flow-line"></div></div><div class="flow-right"><div class="action">Laporkan kepada ERT segera &mdash; hubungi nombor kecemasan PKB</div><div class="pic">Pengesan Pertama</div></div></div>
+        <div class="flow-step"><div class="flow-left"><div class="flow-dot dot-step">2</div><div class="flow-line"></div></div><div class="flow-right"><div class="action">Pasukan perubatan ERT tiba &mdash; laksanakan penilaian awal</div><div class="pic">Medical Unit</div></div></div>
+        <div class="flow-step"><div class="flow-left"><div class="flow-dot dot-step">3</div><div class="flow-line"></div></div><div class="flow-right"><div class="action">Laksanakan CPR / pertolongan cemas mengikut keperluan</div><div class="pic">Medical Unit</div></div></div>
+        <div class="flow-step"><div class="flow-left"><div class="flow-dot dot-step">4</div><div class="flow-line"></div></div><div class="flow-right"><div class="action">Hubungi Ambulans (999) &amp; Hospital Kota Bharu</div><div class="pic">Liaison Officer</div></div></div>
+        <div class="flow-step"><div class="flow-left"><div class="flow-dot dot-step">5</div><div class="flow-line"></div></div><div class="flow-right"><div class="action">Maklumkan kepada waris / ibu bapa mangsa</div><div class="pic">IC / Liaison Officer</div></div></div>
+        <div class="flow-step flow-step-end"><div class="flow-left"><div class="flow-dot dot-end">T</div></div><div class="flow-right"><div class="action">Mangsa dihantar ke hospital. IC isi BRT-01 &amp; BRT-04</div><div class="pic">Incident Commander</div></div></div>
+      </div>
+    </div>
+
+    <div class="proc-content" id="proc-quake">
+      <div class="flow-steps">
+        <div class="flow-step flow-step-start"><div class="flow-left"><div class="flow-dot dot-start">M</div><div class="flow-line"></div></div><div class="flow-right"><div class="action">Kesan gegaran bangunan atau bunyi letupan yang kuat</div><div class="pic">Sesiapa yang mengesan</div></div></div>
+        <div class="flow-step"><div class="flow-left"><div class="flow-dot dot-step">1</div><div class="flow-line"></div></div><div class="flow-right"><div class="action">BERLINDUNG &mdash; Drop, Cover, Hold On di bawah meja (semasa gegaran)</div><div class="pic">Semua individu</div></div></div>
+        <div class="flow-step"><div class="flow-left"><div class="flow-dot dot-step">2</div><div class="flow-line"></div></div><div class="flow-right"><div class="action">Selepas gegaran berhenti &mdash; evakuasikan bangunan segera</div><div class="pic">Operations Section Chief</div></div></div>
+        <div class="flow-step"><div class="flow-left"><div class="flow-dot dot-step">3</div><div class="flow-line"></div></div><div class="flow-right"><div class="action">Laporkan kepada IC &mdash; aktifkan ERT sepenuhnya</div><div class="pic">Safety Officer</div></div></div>
+        <div class="flow-step"><div class="flow-left"><div class="flow-dot dot-step">4</div><div class="flow-line"></div></div><div class="flow-right"><div class="action">Carian dan penyelamatan (SAR) mangsa terperangkap</div><div class="pic">Operations Section Chief</div></div></div>
+        <div class="flow-step"><div class="flow-left"><div class="flow-dot dot-step">5</div><div class="flow-line"></div></div><div class="flow-right"><div class="action">Rawat mangsa &mdash; triage (merah / kuning / hijau)</div><div class="pic">Medical Unit</div></div></div>
+        <div class="flow-step"><div class="flow-left"><div class="flow-dot dot-step">6</div><div class="flow-line"></div></div><div class="flow-right"><div class="action">Hubungi Bomba (994), Polis &amp; Ambulans (999)</div><div class="pic">Liaison Officer</div></div></div>
+        <div class="flow-step flow-step-end"><div class="flow-left"><div class="flow-dot dot-end">T</div></div><div class="flow-right"><div class="action">Agensi luar ambil alih. IC sediakan laporan BRT-01</div><div class="pic">Incident Commander</div></div></div>
+      </div>
+    </div>
+
+    <div class="proc-content" id="proc-threat">
+      <div class="flow-steps">
+        <div class="flow-step flow-step-start"><div class="flow-left"><div class="flow-dot dot-start">M</div><div class="flow-line"></div></div><div class="flow-right"><div class="action">Terima laporan ancaman bom / individu mencurigakan / pergaduhan</div><div class="pic">Sesiapa yang mengesan</div></div></div>
+        <div class="flow-step"><div class="flow-left"><div class="flow-dot dot-step">1</div><div class="flow-line"></div></div><div class="flow-right"><div class="action">Laporkan kepada ERT &amp; Keselamatan PKB segera &mdash; jangan panik</div><div class="pic">Pengesan Pertama</div></div></div>
+        <div class="flow-step"><div class="flow-left"><div class="flow-dot dot-step">2</div><div class="flow-line"></div></div><div class="flow-right"><div class="action">Aktifkan ERT &mdash; IC nilai situasi &amp; tentukan tindakan</div><div class="pic">Incident Commander</div></div></div>
+        <div class="flow-step"><div class="flow-left"><div class="flow-dot dot-step">3</div><div class="flow-line"></div></div><div class="flow-right"><div class="action">Hubungi PDRM (999) segera &mdash; berikan maklumat lengkap</div><div class="pic">Liaison Officer</div></div></div>
+        <div class="flow-step"><div class="flow-left"><div class="flow-dot dot-step">4</div><div class="flow-line"></div></div><div class="flow-right"><div class="action">Laksanakan pengungsian &mdash; kawal pergerakan orang ramai</div><div class="pic">Safety Officer / Ops Chief</div></div></div>
+        <div class="flow-step"><div class="flow-left"><div class="flow-dot dot-step">5</div><div class="flow-line"></div></div><div class="flow-right"><div class="action">JANGAN sentuh objek / bungkusan mencurigakan</div><div class="pic">Safety Officer</div></div></div>
+        <div class="flow-step"><div class="flow-left"><div class="flow-dot dot-step">6</div><div class="flow-line"></div></div><div class="flow-right"><div class="action">Serahkan kawalan kepada PDRM apabila tiba</div><div class="pic">Incident Commander</div></div></div>
+        <div class="flow-step flow-step-end"><div class="flow-left"><div class="flow-dot dot-end">T</div></div><div class="flow-right"><div class="action">PDRM sahkan kawasan selamat. IC benarkan masuk &amp; isi BRT-01</div><div class="pic">Incident Commander</div></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BORANG -->
+  <div class="section" id="sec-borang">
+    <div class="sec-title">📄 Borang Rasmi ERT PKB</div>
+    <div class="alert alert-yellow">📝 BRT-01 &amp; BRT-02 <strong>wajib</strong> diisi bagi setiap insiden.</div>
+    <div class="borang-list">
+      <div class="borang-card"><div class="bcode">BRT-01</div><h4>Laporan Insiden Kecemasan</h4><p>Rekod lengkap insiden &mdash; maklumat, tindakan, agensi luar, kerosakan &amp; cadangan.</p><p class="bpic">PIC: Incident Commander</p><p class="btime">Dalam 24 jam selepas insiden</p></div>
+      <div class="borang-card"><div class="bcode">BRT-02</div><h4>Senarai Semak Kecemasan</h4><p>14 tindakan kecemasan yang perlu disemak semasa insiden berlangsung.</p><p class="bpic">PIC: Safety Officer</p><p class="btime">Semasa insiden berlangsung</p></div>
+      <div class="borang-card"><div class="bcode">BRT-03</div><h4>Rekod Kehadiran Titik Perhimpunan</h4><p>Rekod kehadiran semua individu semasa pengungsian oleh Warden Lantai.</p><p class="bpic">PIC: Warden Lantai / Ketua Kumpulan</p><p class="btime">Semasa pengungsian berlaku</p></div>
+      <div class="borang-card"><div class="bcode">BRT-04</div><h4>Laporan Kecederaan Mangsa</h4><p>Rekod mangsa dan rawatan &mdash; triage (merah/kuning/hijau) &amp; rujukan hospital.</p><p class="bpic">PIC: Medical Unit</p><p class="btime">Semasa merawat mangsa</p></div>
+      <div class="borang-card"><div class="bcode">BRT-05</div><h4>Permintaan Bantuan Agensi Luar</h4><p>Rekod koordinasi dengan agensi luar. Untuk Tahap 2 &amp; 3 sahaja.</p><p class="bpic">PIC: Liaison Officer</p><p style="font-size:11px;color:#f59e0b;margin-top:4px;font-weight:600">Tahap 2 &amp; 3 sahaja</p></div>
+      <div class="borang-card"><div class="bcode">BRT-06</div><h4>Laporan Pasca-Insiden</h4><p>Penilaian selepas insiden &mdash; aspek berjaya, kerosakan &amp; keperluan pindaan PTK.</p><p class="bpic">PIC: IC + Semua Section Chiefs</p><p class="btime">Dalam 48 jam selepas insiden</p></div>
+    </div>
+
+    <div class="sec-title">📝 Contoh Laporan</div>
+    <div class="contoh-box">
+      <h4>Laporan Kebakaran &mdash; PKB/ERT/2025/001</h4>
+      <div class="crow"><span class="ckey">Tarikh &amp; Masa</span><span class="cval">15 Januari 2025 &middot; 14:35 petang</span></div>
+      <div class="crow"><span class="ckey">Lokasi</span><span class="cval">Makmal Elektrik, Blok C, Tingkat 2</span></div>
+      <div class="crow"><span class="ckey">Jenis &amp; Tahap</span><span class="cval">Kebakaran &mdash; Tahap 2 (Sederhana)</span></div>
+      <div class="crow"><span class="ckey">Individu Terlibat</span><span class="cval">Pelajar: 28 &middot; Staf: 2</span></div>
+      <div class="crow"><span class="ckey">Mangsa</span><span class="cval">1 orang &mdash; Luka bakar ringan tangan kanan</span></div>
+      <div class="crow"><span class="ckey">Kronologi</span><span class="cval">Penggera 14:35 &rarr; ERT 14:37 &rarr; Evakuasi 14:38 &rarr; APAR 14:45 &rarr; All Clear 15:20</span></div>
+      <div class="crow"><span class="ckey">Status</span><span class="cval" style="color:#27ae60;font-weight:700">Terkawal Sepenuhnya</span></div>
+    </div>
+  </div>
+
+  <!-- HUBUNGI -->
+  <div class="section" id="sec-hubungi">
+    <div class="sec-title">📞 Nombor Kecemasan</div>
+    <div class="call-grid">
+      <a class="call-card merah" href="tel:994"><div class="call-icon">🔥</div><div class="call-num">994</div><div class="call-label">Bomba</div><div class="call-sub">JBPM Kota Bharu</div></a>
+      <a class="call-card merah" href="tel:999"><div class="call-icon">🚓</div><div class="call-num">999</div><div class="call-label">Polis</div><div class="call-sub">PDRM</div></a>
+      <a class="call-card hijau" href="tel:999"><div class="call-icon">🚑</div><div class="call-num">999</div><div class="call-label">Ambulans</div><div class="call-sub">Hospital Kota Bharu</div></a>
+      <a class="call-card biru" href="tel:15454"><div class="call-icon">⚡</div><div class="call-num">15454</div><div class="call-label">TNB</div><div class="call-sub">Gangguan Elektrik</div></a>
+      <a class="call-card kuning" href="tel:"><div class="call-icon">🏛️</div><div class="call-num" style="font-size:14px">Sila Isi</div><div class="call-label">Keselamatan PKB</div><div class="call-sub">24 jam sehari</div></a>
+      <a class="call-card kuning" href="tel:"><div class="call-icon">🎖️</div><div class="call-num" style="font-size:14px">Sila Isi</div><div class="call-label">Incident Commander</div><div class="call-sub">ERT PKB</div></a>
+    </div>
+
+    <div class="sec-title">⏱️ Masa Tindak Balas Sasaran</div>
+    <div class="masa-list">
+      <div class="masa-card"><span class="masa-action">ERT diaktifkan selepas laporan</span><span class="masa-time t-green">&lt; 2 min</span></div>
+      <div class="masa-card"><span class="masa-action">Pengungsian bangunan selesai</span><span class="masa-time t-green">&lt; 5 min</span></div>
+      <div class="masa-card"><span class="masa-action">Kehadiran disemak di Titik Perhimpunan</span><span class="masa-time t-orange">&lt; 10 min</span></div>
+      <div class="masa-card"><span class="masa-action">Agensi luar dihubungi (Tahap 2 &amp; 3)</span><span class="masa-time t-green">&lt; 3 min</span></div>
+      <div class="masa-card"><span class="masa-action">Pertolongan cemas kepada mangsa</span><span class="masa-time t-green">&lt; 5 min</span></div>
+      <div class="masa-card"><span class="masa-action">Borang BRT-01 diisi</span><span class="masa-time t-orange">&lt; 24 jam</span></div>
+      <div class="masa-card"><span class="masa-action">Laporan pasca-insiden BRT-06</span><span class="masa-time t-orange">&lt; 48 jam</span></div>
+    </div>
+  </div>
+
+</div><!-- end main -->
+
+<div class="footer">
+  PTK ERT &middot; Politeknik Kota Bharu (PKB) &middot; Versi 1.0 &middot; 2025<br>
+  <hr style="border:none;border-top:1px solid #e5e7eb;margin:8px 0">
+  Made with IBM Bob
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+  <button class="bnav-item active" onclick="showSec('overview',this)"><span class="bnav-icon">🏠</span><span class="bnav-label">Ringkasan</span></button>
+  <button class="bnav-item" onclick="showSec('kecemasan',this)"><span class="bnav-icon">⚠️</span><span class="bnav-label">Kecemasan</span></button>
+  <button class="bnav-item" onclick="showSec('prosedur',this)"><span class="bnav-icon">📋</span><span class="bnav-label">Prosedur</span></button>
+  <button class="bnav-item" onclick="showSec('borang',this)"><span class="bnav-icon">📄</span><span class="bnav-label">Borang</span></button>
+  <button class="bnav-item" onclick="showSec('hubungi',this)"><span class="bnav-icon">📞</span><span class="bnav-label">Hubungi</span></button>
+</nav>
+
+<script>
+function showSec(id, el) {
+  document.querySelectorAll('.section').forEach(function(s){ s.classList.remove('active'); });
+  document.querySelectorAll('.bnav-item').forEach(function(b){ b.classList.remove('active'); });
+  document.getElementById('sec-' + id).classList.add('active');
+  el.classList.add('active');
+  window.scrollTo(0, 0);
+}
+function showProc(id, el) {
+  document.querySelectorAll('.proc-content').forEach(function(p){ p.classList.remove('active'); });
+  document.querySelectorAll('.proc-chip').forEach(function(c){ c.classList.remove('active'); });
+  document.getElementById('proc-' + id).classList.add('active');
+  el.classList.add('active');
+}
+function toggleEmg(header) {
+  var body = header.nextElementSibling;
+  var isOpen = body.classList.contains('open');
+  document.querySelectorAll('.emg-body').forEach(function(b){ b.classList.remove('open'); });
+  document.querySelectorAll('.emg-header').forEach(function(h){ h.classList.remove('open'); });
+  if (!isOpen) { body.classList.add('open'); header.classList.add('open'); }
+}
+</script>
+</body>
+</html>
